@@ -1,4 +1,4 @@
-# 🧠 Intellecta
+# Intellecta
 
 > Because reading a 40-page unformatted PDF is a crime against humanity. 
 
@@ -6,7 +6,7 @@
 
 ---
 
-## ✨ Features
+## Features
 
 - 📄 **Smart PDF Ingestion**: Upload a PDF and watch as it gets stripped of formatting and chunked into digestible pieces. No more token-limit bankruptcies!
 - 🗂️ **Spaced-Repetition Flashcards**: Automatically extracts the top concepts and definitions so you can pretend you read the whole chapter.
@@ -17,7 +17,7 @@
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend (The Pretty Face)
 - **React & Vite**: Because waiting for Webpack to compile is so 2018.
@@ -33,7 +33,7 @@
 
 ---
 
-## 🚀 How to Run Locally
+## How to Run Locally
 
 Want to spin this up on your own machine? Awesome. Just don't forget your API key, or the app will judge you silently.
 
@@ -76,7 +76,7 @@ npm run dev
 
 ---
 
-## 🛑 Known Quirks & Disclaimers
+## Known Quirks & Disclaimers
 - **The "Resource Exhausted" Wall**: Gemini's free tier allows 15 requests per minute. If you aggressively spam the "Generate More" button like you're playing Cookie Clicker, the AI will put you in timeout for a minute. Go grab a coffee.
 - **Render Cold Starts**: If you deploy the backend on Render's free tier, it takes a 15-minute nap when nobody is looking. The first PDF upload might take 2 minutes while the server wakes up, yawns, and stretches.
 
