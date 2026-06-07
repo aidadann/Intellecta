@@ -4,7 +4,7 @@ import { Upload, FileText, LayoutDashboard, RefreshCw, CheckCircle2, ChevronRigh
 import MermaidRenderer from './components/MermaidRenderer';
 import { motion } from 'framer-motion';
 
-const API_BASE = 'http://localhost:8000'; // Assuming backend runs on 8000 locally
+const API_BASE = 'https://intellecta-o64p.onrender.com';
 
 export default function App() {
   const [file, setFile] = useState(null);
@@ -35,7 +35,7 @@ export default function App() {
     setFile(selectedFile);
     setLoading(true);
     setError(null);
-    
+
     const formData = new FormData();
     formData.append('file', selectedFile);
 
@@ -54,7 +54,7 @@ export default function App() {
     if (!sessionId) return;
     setGenLoading(prev => ({ ...prev, [type]: true }));
     setError(null);
-    
+
     try {
       const res = await axios.post(`${API_BASE}/generate/${type}`, { session_id: sessionId });
       setMaterials(prev => ({ ...prev, [type]: res.data.data }));
@@ -69,15 +69,15 @@ export default function App() {
     if (!sessionId) return;
     setGenLoading(prev => ({ ...prev, diagram: true }));
     setError(null);
-    
+
     try {
-      const res = await axios.post(`${API_BASE}/generate/diagram`, { 
+      const res = await axios.post(`${API_BASE}/generate/diagram`, {
         session_id: sessionId,
         diagram_type: diagramType
       });
-      setMaterials(prev => ({ 
-        ...prev, 
-        diagrams: [...prev.diagrams, res.data.data] 
+      setMaterials(prev => ({
+        ...prev,
+        diagrams: [...prev.diagrams, res.data.data]
       }));
     } catch (err) {
       setError(`Failed to generate diagram`);
@@ -97,7 +97,7 @@ export default function App() {
             </div>
             <h1 className="text-2xl font-bold tracking-tight">Intellecta</h1>
           </div>
-          
+
           <p className="text-slate-400 mb-6 text-sm">Upload a document to extract text and generate study materials dynamically.</p>
 
           <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-700 border-dashed rounded-xl cursor-pointer bg-slate-800/50 hover:bg-slate-800 transition group">
@@ -127,7 +127,7 @@ export default function App() {
                 <CheckCircle2 className="w-5 h-5" />
                 <span className="font-semibold">Text Extracted & Cached</span>
               </div>
-              
+
               <div className="flex-1 bg-slate-950/50 rounded-xl p-4 border border-slate-800 overflow-y-auto min-h-[200px]">
                 <h3 className="text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
                   <FileText className="w-4 h-4" /> Preview
@@ -148,19 +148,18 @@ export default function App() {
             {/* Tabs */}
             <div className="flex flex-wrap gap-2 mb-6 bg-slate-950/30 p-1.5 rounded-xl border border-slate-800/50">
               {[
-                { id: 'flashcards', icon: <LayoutDashboard size={16}/>, label: 'Flashcards' },
-                { id: 'exercises', icon: <Activity size={16}/>, label: 'Exercises' },
-                { id: 'test', icon: <FileCheck2 size={16}/>, label: 'Practice Test' },
-                { id: 'visuals', icon: <Network size={16}/>, label: 'Visual Diagrams' }
+                { id: 'flashcards', icon: <LayoutDashboard size={16} />, label: 'Flashcards' },
+                { id: 'exercises', icon: <Activity size={16} />, label: 'Exercises' },
+                { id: 'test', icon: <FileCheck2 size={16} />, label: 'Practice Test' },
+                { id: 'visuals', icon: <Network size={16} />, label: 'Visual Diagrams' }
               ].map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    activeTab === tab.id 
-                      ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    }`}
                 >
                   {tab.icon} {tab.label}
                 </button>
@@ -169,16 +168,16 @@ export default function App() {
 
             {/* Tab Content */}
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
-              
+
               {/* FLASHCARDS */}
               {activeTab === 'flashcards' && (
                 <div className="space-y-4">
                   {!materials.flashcards && !genLoading.flashcards && (
-                     <GeneratePrompt 
-                      title="Generate Flashcards" 
-                      desc="Create a set of spaced-repetition flashcards based on the extracted text." 
-                      onClick={() => generateMaterial('flashcards')} 
-                     />
+                    <GeneratePrompt
+                      title="Generate Flashcards"
+                      desc="Create a set of spaced-repetition flashcards based on the extracted text."
+                      onClick={() => generateMaterial('flashcards')}
+                    />
                   )}
                   {genLoading.flashcards && <LoadingIndicator />}
                   {materials.flashcards?.flashcards && (
@@ -200,11 +199,11 @@ export default function App() {
               {activeTab === 'exercises' && (
                 <div className="space-y-4">
                   {!materials.exercises && !genLoading.exercises && (
-                     <GeneratePrompt 
-                      title="Generate Exercises" 
-                      desc="Create interactive mock problems to test comprehension." 
-                      onClick={() => generateMaterial('exercises')} 
-                     />
+                    <GeneratePrompt
+                      title="Generate Exercises"
+                      desc="Create interactive mock problems to test comprehension."
+                      onClick={() => generateMaterial('exercises')}
+                    />
                   )}
                   {genLoading.exercises && <LoadingIndicator />}
                   {materials.exercises?.exercises && (
@@ -212,7 +211,7 @@ export default function App() {
                       {materials.exercises.exercises.map((ex, i) => (
                         <div key={i} className="bg-slate-800 p-5 rounded-xl border border-slate-700">
                           <div className="flex gap-3 mb-3">
-                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">{i+1}</span>
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">{i + 1}</span>
                             <p className="text-slate-200 font-medium">{ex.question}</p>
                           </div>
                           <details className="mt-2 text-sm text-slate-400 group">
@@ -233,11 +232,11 @@ export default function App() {
               {activeTab === 'test' && (
                 <div className="space-y-4">
                   {!materials.test && !genLoading.test && (
-                     <GeneratePrompt 
-                      title="Generate Practice Test" 
-                      desc="Compile a formal test including Multiple Choice, True/False, and Short Answer." 
-                      onClick={() => generateMaterial('test')} 
-                     />
+                    <GeneratePrompt
+                      title="Generate Practice Test"
+                      desc="Compile a formal test including Multiple Choice, True/False, and Short Answer."
+                      onClick={() => generateMaterial('test')}
+                    />
                   )}
                   {genLoading.test && <LoadingIndicator />}
                   {materials.test && (
@@ -248,7 +247,7 @@ export default function App() {
                         <div className="space-y-4">
                           {materials.test.multiple_choice?.map((q, i) => (
                             <div key={i} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
-                              <p className="font-medium mb-3">{i+1}. {q.question}</p>
+                              <p className="font-medium mb-3">{i + 1}. {q.question}</p>
                               <div className="space-y-2 pl-4">
                                 {q.options.map((opt, j) => (
                                   <label key={j} className="flex items-center gap-2 text-sm text-slate-300">
@@ -267,7 +266,7 @@ export default function App() {
                         <div className="space-y-4">
                           {materials.test.true_false?.map((q, i) => (
                             <div key={i} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
-                              <p className="font-medium mb-3">{i+1}. {q.question}</p>
+                              <p className="font-medium mb-3">{i + 1}. {q.question}</p>
                               <details className="mt-2 text-sm text-slate-500"><summary className="cursor-pointer hover:text-primary">Answer</summary><p className="mt-1 text-green-400">{q.correct_answer ? "True" : "False"}</p></details>
                             </div>
                           ))}
@@ -279,7 +278,7 @@ export default function App() {
                         <div className="space-y-4">
                           {materials.test.short_answer?.map((q, i) => (
                             <div key={i} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
-                              <p className="font-medium mb-3">{i+1}. {q.question}</p>
+                              <p className="font-medium mb-3">{i + 1}. {q.question}</p>
                               <details className="mt-2 text-sm text-slate-500"><summary className="cursor-pointer hover:text-primary">Guide</summary><p className="mt-1 text-green-400">{q.correct_answer_guide}</p></details>
                             </div>
                           ))}
@@ -304,9 +303,9 @@ export default function App() {
                       + Hierarchies (mindmap)
                     </button>
                   </div>
-                  
+
                   {genLoading.diagram && <LoadingIndicator />}
-                  
+
                   {materials.diagrams.map((d, i) => (
                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={i} className="bg-slate-800/30 p-5 rounded-2xl border border-slate-700">
                       <h3 className="text-xl font-bold text-white mb-1">{d.title}</h3>
