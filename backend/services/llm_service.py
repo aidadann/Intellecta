@@ -3,20 +3,59 @@ import json
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from pydantic import BaseModel
+from typing import List
 
 load_dotenv()
 
-# Ensure you have GEMINI_API_KEY set in your environment variables (.env file)
-# The client automatically picks it up
 try:
     client = genai.Client()
 except Exception as e:
     print(f"Failed to initialize GenAI client. Ensure GEMINI_API_KEY is set. Error: {e}")
     client = None
 
-MODEL_ID = 'gemini-2.5-flash' # Good balance of speed and reasoning
+MODEL_ID = 'gemini-2.5-flash'
 
-async def _call_llm_json(prompt: str) -> dict:
+# Pydantic Schemas for Strict JSON enforcement
+class Flashcard(BaseModel):
+    term: str
+    definition: str
+
+class FlashcardList(BaseModel):
+    flashcards: list[Flashcard]
+
+class Exercise(BaseModel):
+    question: str
+    hint: str
+    answer: str
+
+class ExerciseList(BaseModel):
+    exercises: list[Exercise]
+
+class MCQ(BaseModel):
+    question: str
+    options: list[str]
+    correct_answer: str
+
+class TF(BaseModel):
+    question: str
+    correct_answer: bool
+
+class SA(BaseModel):
+    question: str
+    correct_answer_guide: str
+
+class TestModel(BaseModel):
+    multiple_choice: list[MCQ]
+    true_false: list[TF]
+    short_answer: list[SA]
+
+class DiagramModel(BaseModel):
+    title: str
+    description: str
+    mermaid_code: str
+
+async def _call_llm_json(prompt: str, schema) -> dict:
     if not client:
         return {"error": "LLM Client not initialized. Check API Key."}
     try:
@@ -25,67 +64,43 @@ async def _call_llm_json(prompt: str) -> dict:
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
+                response_schema=schema,
             ),
         )
         return json.loads(response.text)
     except Exception as e:
+        print(f"LLM Error: {str(e)}")
         return {"error": str(e)}
-
-async def _call_llm_text(prompt: str) -> str:
-    if not client:
-        return "LLM Client not initialized. Check API Key."
-    try:
-        response = client.models.generate_content(
-            model=MODEL_ID,
-            contents=prompt,
-        )
-        return response.text
-    except Exception as e:
-        return f"Error generating text: {str(e)}"
 
 async def generate_flashcards(text: str) -> dict:
     prompt = f"""
     Analyze the following text and extract key terms and definitions for spaced-repetition study.
-    Return a JSON object with a single key "flashcards" containing a list of objects, each with "term" and "definition".
-    Limit to top 15 most important concepts.
+    Return the output strictly matching the required schema. Limit to top 15 most important concepts.
 
     TEXT:
     {text}
     """
-    return await _call_llm_json(prompt)
+    return await _call_llm_json(prompt, FlashcardList)
 
 async def generate_exercises(text: str) -> dict:
     prompt = f"""
     Analyze the following text and create a series of interactive, short-form practice problems based on the core concepts.
-    Return a JSON object with a key "exercises" containing a list of objects.
-    Each object should have:
-    - "question": The practice problem.
-    - "hint": A small hint.
-    - "answer": The correct answer or explanation.
-
     Limit to 5-7 exercises.
 
     TEXT:
     {text}
     """
-    return await _call_llm_json(prompt)
+    return await _call_llm_json(prompt, ExerciseList)
 
 async def generate_test(text: str) -> dict:
     prompt = f"""
     Compile a formal practice test from the following text.
-    Return a JSON object with three keys: "multiple_choice", "true_false", and "short_answer".
-    Each should be a list of questions with their respective answer keys.
-
-    For "multiple_choice": include "question", "options" (list of strings), and "correct_answer".
-    For "true_false": include "question" and "correct_answer" (boolean).
-    For "short_answer": include "question" and "correct_answer_guide".
-
-    Provide 3 questions of each type.
+    Provide exactly 3 multiple choice questions, 3 true/false questions, and 3 short answer questions.
 
     TEXT:
     {text}
     """
-    return await _call_llm_json(prompt)
+    return await _call_llm_json(prompt, TestModel)
 
 async def generate_diagram(text: str, diagram_type: str) -> dict:
     instructions = ""
@@ -95,8 +110,18 @@ async def generate_diagram(text: str, diagram_type: str) -> dict:
         instructions = "Use Mermaid.js `quadrantChart` to show overlaps or differences between competing theories/concepts."
     elif diagram_type == "hierarchies":
         instructions = "Use Mermaid.js `mindmap` to break down complex chapters into sub-topics."
+    elif diagram_type == "flowchart":
+        instructions = "Use Mermaid.js `graph LR` or `graph TD` to create a logical flowchart of decisions or steps."
+    elif diagram_type == "block_diagram":
+        instructions = "Use Mermaid.js `block-beta` to create a block diagram showing system components and their relationships."
+    elif diagram_type == "erd":
+        instructions = "Use Mermaid.js `erDiagram` to show an Entity-Relationship Diagram of core concepts acting as entities."
+    elif diagram_type == "venn":
+        instructions = "Mermaid doesn't have native Venn diagrams. Instead, use `quadrantChart` or `graph` to creatively compare concepts and show their intersections or differences."
+    elif diagram_type == "tree":
+        instructions = "Use Mermaid.js `graph TD` to create a top-down tree structure representing categorization."
     else:
-        instructions = "Use a Mermaid.js `graph TD` flowchart."
+        instructions = "Use a basic Mermaid.js `graph TD` flowchart."
 
     prompt = f"""
     You are an expert at creating visual mnemonics using Mermaid.js.
@@ -104,12 +129,9 @@ async def generate_diagram(text: str, diagram_type: str) -> dict:
     
     {instructions}
 
-    Return a JSON object with:
-    - "title": A short title for the diagram.
-    - "description": A brief explanation of what the diagram shows.
-    - "mermaid_code": The raw Mermaid.js syntax (do NOT wrap in markdown code blocks like ```mermaid, just the code itself).
+    Important: For `mermaid_code`, return the raw Mermaid.js syntax only. Do NOT wrap it in markdown code blocks (e.g. no ```mermaid).
     
     TEXT:
     {text}
     """
-    return await _call_llm_json(prompt)
+    return await _call_llm_json(prompt, DiagramModel)
