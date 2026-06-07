@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Upload, FileText, LayoutDashboard, RefreshCw, CheckCircle2, ChevronRight, BrainCircuit, Activity, FileCheck2, Network, RefreshCcw, Trash2 } from 'lucide-react';
+import { Upload, FileText, LayoutDashboard, RefreshCw, CheckCircle2, ChevronRight, BrainCircuit, Activity, FileCheck2, Network, RefreshCcw, Trash2, Plus } from 'lucide-react';
 import MermaidRenderer from './components/MermaidRenderer';
 import { motion } from 'framer-motion';
 
@@ -60,6 +60,55 @@ export default function App() {
       setMaterials(prev => ({ ...prev, [type]: res.data.data }));
     } catch (err) {
       setError(`Failed to generate ${type}`);
+    } finally {
+      setGenLoading(prev => ({ ...prev, [type]: false }));
+    }
+  };
+
+  const generateMoreMaterial = async (type) => {
+    if (!sessionId) return;
+    setGenLoading(prev => ({ ...prev, [type]: true }));
+    setError(null);
+    
+    let existingContent = "";
+    if (type === 'exercises' && materials.exercises) {
+      existingContent = materials.exercises.exercises.map(e => e.question).join("\n");
+    } else if (type === 'test' && materials.test) {
+      existingContent = [
+        ...(materials.test.multiple_choice || []).map(e => e.question),
+        ...(materials.test.true_false || []).map(e => e.question),
+        ...(materials.test.short_answer || []).map(e => e.question)
+      ].join("\n");
+    }
+
+    try {
+      const res = await axios.post(`${API_BASE}/generate/${type}`, { 
+        session_id: sessionId,
+        existing_content: existingContent 
+      });
+      
+      setMaterials(prev => {
+        if (type === 'exercises') {
+          return {
+            ...prev,
+            exercises: {
+              exercises: [...(prev.exercises?.exercises || []), ...(res.data.data.exercises || [])]
+            }
+          };
+        } else if (type === 'test') {
+          return {
+            ...prev,
+            test: {
+              multiple_choice: [...(prev.test?.multiple_choice || []), ...(res.data.data.multiple_choice || [])],
+              true_false: [...(prev.test?.true_false || []), ...(res.data.data.true_false || [])],
+              short_answer: [...(prev.test?.short_answer || []), ...(res.data.data.short_answer || [])],
+            }
+          };
+        }
+        return prev;
+      });
+    } catch (err) {
+      setError(`Failed to generate more ${type}`);
     } finally {
       setGenLoading(prev => ({ ...prev, [type]: false }));
     }
@@ -231,8 +280,9 @@ export default function App() {
                   )}
                   {materials.exercises?.exercises && (
                     <div className="space-y-4">
-                      <div className="flex justify-end">
-                        <button onClick={() => generateMaterial('exercises')} className="text-sm flex items-center gap-2 text-primary hover:text-primary-hover transition"><RefreshCcw size={14}/> Regenerate</button>
+                      <div className="flex justify-end gap-3">
+                        <button onClick={() => generateMoreMaterial('exercises')} className="text-sm flex items-center gap-1 text-green-400 hover:text-green-300 transition"><Plus size={16}/> Generate More</button>
+                        <button onClick={() => generateMaterial('exercises')} className="text-sm flex items-center gap-2 text-primary hover:text-primary-hover transition"><RefreshCcw size={14}/> Regenerate All</button>
                       </div>
                       {materials.exercises.exercises.map((ex, i) => (
                         <div key={i} className="bg-slate-800 p-5 rounded-xl border border-slate-700">
@@ -272,8 +322,9 @@ export default function App() {
                   )}
                   {materials.test && !materials.test.error && (
                     <div className="space-y-8">
-                      <div className="flex justify-end -mb-4">
-                        <button onClick={() => generateMaterial('test')} className="text-sm flex items-center gap-2 text-primary hover:text-primary-hover transition"><RefreshCcw size={14}/> Regenerate</button>
+                      <div className="flex justify-end gap-3 -mb-4">
+                        <button onClick={() => generateMoreMaterial('test')} className="text-sm flex items-center gap-1 text-green-400 hover:text-green-300 transition"><Plus size={16}/> Generate More</button>
+                        <button onClick={() => generateMaterial('test')} className="text-sm flex items-center gap-2 text-primary hover:text-primary-hover transition"><RefreshCcw size={14}/> Regenerate All</button>
                       </div>
                       {/* Multiple Choice */}
                       <section>

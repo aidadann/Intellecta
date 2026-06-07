@@ -24,6 +24,7 @@ memory_state: Dict[str, Dict[str, Any]] = {}
 
 class SessionRequest(BaseModel):
     session_id: str
+    existing_content: Optional[str] = None
 
 class DiagramRequest(BaseModel):
     session_id: str
@@ -72,7 +73,7 @@ async def api_generate_exercises(req: SessionRequest):
     if req.session_id not in memory_state:
         raise HTTPException(status_code=404, detail="Session not found or expired.")
     text = memory_state[req.session_id]["text"]
-    result = await generate_exercises(text)
+    result = await generate_exercises(text, req.existing_content)
     return {"data": result}
 
 @app.post("/generate/test")
@@ -80,7 +81,7 @@ async def api_generate_test(req: SessionRequest):
     if req.session_id not in memory_state:
         raise HTTPException(status_code=404, detail="Session not found or expired.")
     text = memory_state[req.session_id]["text"]
-    result = await generate_test(text)
+    result = await generate_test(text, req.existing_content)
     return {"data": result}
 
 @app.post("/generate/diagram")

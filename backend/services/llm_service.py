@@ -82,20 +82,24 @@ async def generate_flashcards(text: str) -> dict:
     """
     return await _call_llm_json(prompt, FlashcardList)
 
-async def generate_exercises(text: str) -> dict:
+async def generate_exercises(text: str, existing_content: str = None) -> dict:
+    exclusion = f"\nThe student has already answered these questions. DO NOT generate anything similar to these:\n{existing_content}\nFocus on different parts of the text.\n" if existing_content else ""
     prompt = f"""
     Analyze the following text and create a series of interactive, short-form practice problems based on the core concepts.
     Limit to 5-7 exercises.
+    {exclusion}
 
     TEXT:
     {text}
     """
     return await _call_llm_json(prompt, ExerciseList)
 
-async def generate_test(text: str) -> dict:
+async def generate_test(text: str, existing_content: str = None) -> dict:
+    exclusion = f"\nThe student has already answered these questions. DO NOT generate anything similar to these:\n{existing_content}\nFocus on different parts of the text.\n" if existing_content else ""
     prompt = f"""
     Compile a formal practice test from the following text.
     Provide exactly 3 multiple choice questions, 3 true/false questions, and 3 short answer questions.
+    {exclusion}
 
     TEXT:
     {text}
