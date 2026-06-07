@@ -188,6 +188,11 @@ export default function App() {
                      />
                   )}
                   {genLoading.flashcards && <LoadingIndicator />}
+                  {materials.flashcards?.error && (
+                    <div className="p-4 bg-red-900/20 text-red-400 border border-red-500 rounded-lg mt-4">
+                      <strong>AI Generation Error:</strong> {materials.flashcards.error}
+                    </div>
+                  )}
                   {materials.flashcards?.flashcards && (
                     <div className="space-y-4">
                       <div className="flex justify-end">
@@ -219,6 +224,11 @@ export default function App() {
                      />
                   )}
                   {genLoading.exercises && <LoadingIndicator />}
+                  {materials.exercises?.error && (
+                    <div className="p-4 bg-red-900/20 text-red-400 border border-red-500 rounded-lg mt-4">
+                      <strong>AI Generation Error:</strong> {materials.exercises.error}
+                    </div>
+                  )}
                   {materials.exercises?.exercises && (
                     <div className="space-y-4">
                       <div className="flex justify-end">
@@ -255,7 +265,12 @@ export default function App() {
                      />
                   )}
                   {genLoading.test && <LoadingIndicator />}
-                  {materials.test && (
+                  {materials.test?.error && (
+                    <div className="p-4 bg-red-900/20 text-red-400 border border-red-500 rounded-lg mt-4">
+                      <strong>AI Generation Error:</strong> {materials.test.error}
+                    </div>
+                  )}
+                  {materials.test && !materials.test.error && (
                     <div className="space-y-8">
                       <div className="flex justify-end -mb-4">
                         <button onClick={() => generateMaterial('test')} className="text-sm flex items-center gap-2 text-primary hover:text-primary-hover transition"><RefreshCcw size={14}/> Regenerate</button>

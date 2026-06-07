@@ -22,7 +22,7 @@ class Flashcard(BaseModel):
     definition: str
 
 class FlashcardList(BaseModel):
-    flashcards: list[Flashcard]
+    flashcards: List[Flashcard]
 
 class Exercise(BaseModel):
     question: str
@@ -30,11 +30,11 @@ class Exercise(BaseModel):
     answer: str
 
 class ExerciseList(BaseModel):
-    exercises: list[Exercise]
+    exercises: List[Exercise]
 
 class MCQ(BaseModel):
     question: str
-    options: list[str]
+    options: List[str]
     correct_answer: str
 
 class TF(BaseModel):
@@ -46,9 +46,9 @@ class SA(BaseModel):
     correct_answer_guide: str
 
 class TestModel(BaseModel):
-    multiple_choice: list[MCQ]
-    true_false: list[TF]
-    short_answer: list[SA]
+    multiple_choice: List[MCQ]
+    true_false: List[TF]
+    short_answer: List[SA]
 
 class DiagramModel(BaseModel):
     title: str
