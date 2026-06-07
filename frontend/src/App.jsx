@@ -12,6 +12,9 @@ export default function App() {
   const [previewText, setPreviewText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  const [totalChunks, setTotalChunks] = useState(1);
+  const [chunkIndices, setChunkIndices] = useState({ flashcards: 0, exercises: 0, test: 0, diagram: 0 });
 
   const [activeTab, setActiveTab] = useState('flashcards');
 
@@ -43,6 +46,8 @@ export default function App() {
       const res = await axios.post(`${API_BASE}/upload`, formData);
       setSessionId(res.data.session_id);
       setPreviewText(res.data.preview);
+      setTotalChunks(res.data.total_chunks || 1);
+      setChunkIndices({ flashcards: 0, exercises: 0, test: 0, diagram: 0 });
     } catch (err) {
       setError(err.response?.data?.detail || "Error uploading file.");
     } finally {
@@ -56,8 +61,12 @@ export default function App() {
     setError(null);
     
     try {
-      const res = await axios.post(`${API_BASE}/generate/${type}`, { session_id: sessionId });
+      const res = await axios.post(`${API_BASE}/generate/${type}`, { 
+        session_id: sessionId,
+        chunk_index: 0
+      });
       setMaterials(prev => ({ ...prev, [type]: res.data.data }));
+      setChunkIndices(prev => ({ ...prev, [type]: 0 }));
     } catch (err) {
       setError(`Failed to generate ${type}`);
     } finally {
@@ -67,24 +76,19 @@ export default function App() {
 
   const generateMoreMaterial = async (type) => {
     if (!sessionId) return;
+    const nextChunk = chunkIndices[type] + 1;
+    if (nextChunk >= totalChunks) {
+      setError("You have extracted all possible questions from this document!");
+      return;
+    }
+    
     setGenLoading(prev => ({ ...prev, [type]: true }));
     setError(null);
-    
-    let existingContent = "";
-    if (type === 'exercises' && materials.exercises) {
-      existingContent = materials.exercises.exercises.map(e => e.question).join("\n");
-    } else if (type === 'test' && materials.test) {
-      existingContent = [
-        ...(materials.test.multiple_choice || []).map(e => e.question),
-        ...(materials.test.true_false || []).map(e => e.question),
-        ...(materials.test.short_answer || []).map(e => e.question)
-      ].join("\n");
-    }
 
     try {
       const res = await axios.post(`${API_BASE}/generate/${type}`, { 
         session_id: sessionId,
-        existing_content: existingContent 
+        chunk_index: nextChunk 
       });
       
       setMaterials(prev => {
@@ -107,6 +111,7 @@ export default function App() {
         }
         return prev;
       });
+      setChunkIndices(prev => ({ ...prev, [type]: nextChunk }));
     } catch (err) {
       setError(`Failed to generate more ${type}`);
     } finally {
@@ -122,12 +127,14 @@ export default function App() {
     try {
       const res = await axios.post(`${API_BASE}/generate/diagram`, { 
         session_id: sessionId,
-        diagram_type: diagramType
+        diagram_type: diagramType,
+        chunk_index: chunkIndices.diagram
       });
       setMaterials(prev => ({ 
         ...prev, 
         diagrams: [...prev.diagrams, res.data.data] 
       }));
+      setChunkIndices(prev => ({ ...prev, diagram: Math.min(prev.diagram + 1, totalChunks - 1) }));
     } catch (err) {
       setError(`Failed to generate diagram`);
     } finally {

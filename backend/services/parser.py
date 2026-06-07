@@ -1,25 +1,39 @@
-import fitz  # PyMuPDF
+import fitz
 import re
 
-def extract_text_from_pdf(pdf_bytes: bytes) -> str:
+def extract_text_from_pdf(pdf_bytes: bytes, pages_per_chunk=2) -> list:
     """
-    Extracts structured text from a PDF file provided as bytes.
-    Maintains logical document flow and cleans up extra whitespace.
+    Extracts text from a PDF file in chunks of pages.
+    Returns a list of strings, where each string is the text of a chunk.
     """
-    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-    text_content = []
-    
-    for page_num in range(len(doc)):
-        page = doc[page_num]
-        # Using "blocks" or raw text. Raw text is often fine if we just want content for LLM.
-        # "text" extracts raw text.
-        text = page.get_text("text")
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        chunks = []
+        current_chunk_text = []
         
-        # Clean up some common PDF artifacts
-        text = re.sub(r'\n+', '\n', text) # Remove multiple newlines
-        text = re.sub(r' +', ' ', text)   # Remove multiple spaces
-        text_content.append(text.strip())
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            text = page.get_text("text")
+            
+            # Basic cleaning
+            text = re.sub(r'\n+', '\n', text)
+            text = re.sub(r' +', ' ', text)
+            
+            current_chunk_text.append(text.strip())
+            
+            if (page_num + 1) % pages_per_chunk == 0:
+                chunks.append("\n\n--- PAGE BREAK ---\n\n".join(current_chunk_text))
+                current_chunk_text = []
+                
+        # Append remaining pages
+        if current_chunk_text:
+            chunks.append("\n\n--- PAGE BREAK ---\n\n".join(current_chunk_text))
+            
+        doc.close()
         
-    doc.close()
-    
-    return "\n\n".join(text_content)
+        if not chunks:
+            return ["No text found in document."]
+            
+        return chunks
+    except Exception as e:
+        raise ValueError(f"Failed to parse PDF: {str(e)}")
