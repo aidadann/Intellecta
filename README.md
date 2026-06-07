@@ -8,12 +8,12 @@
 
 ## Features
 
-- 📄 **Smart PDF Ingestion**: Upload a PDF and watch as it gets stripped of formatting and chunked into digestible pieces. No more token-limit bankruptcies!
-- 🗂️ **Spaced-Repetition Flashcards**: Automatically extracts the top concepts and definitions so you can pretend you read the whole chapter.
-- 🏋️ **Interactive Exercises**: Short-form practice problems with hidden hints and answers.
-- 📝 **Formal Practice Tests**: Generates Multiple Choice, True/False, and Short Answer questions. Perfect for inducing mild academic panic.
-- 🎨 **Visual Diagrams (Mermaid.js)**: Automatically maps concepts into Flowcharts, Block Diagrams, ERDs, and Hierarchy mindmaps because some of us are *visual learners*.
-- 🔄 **"Generate More" Infinite Loop**: Intelligently paginates through your PDF chunks to generate *new* questions without repeating the old ones (or at least, that's the plan until the AI begs for mercy via a `429 Resource Exhausted` error).
+-  **Smart PDF Ingestion**: Upload a PDF and watch as it gets stripped of formatting and chunked into digestible pieces. No more token-limit bankruptcies!
+-  **Spaced-Repetition Flashcards**: Automatically extracts the top concepts and definitions so you can pretend you read the whole chapter.
+-  **Interactive Exercises**: Short-form practice problems with hidden hints and answers.
+-  **Formal Practice Tests**: Generates Multiple Choice, True/False, and Short Answer questions. Perfect for inducing mild academic panic.
+-  **Visual Diagrams (Mermaid.js)**: Automatically maps concepts into Flowcharts, Block Diagrams, ERDs, and Hierarchy mindmaps because some of us are *visual learners*.
+-  **"Generate More" Infinite Loop**: Intelligently paginates through your PDF chunks to generate *new* questions without repeating the old ones (or at least, that's the plan until the AI begs for mercy via a `429 Resource Exhausted` error).
 
 ---
 
